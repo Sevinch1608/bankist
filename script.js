@@ -56,11 +56,13 @@ const ok = document.querySelector('.ok');
 
 
 
-function displayMovements(movements) {
+function displayMovements(movements, sort) {
 
     // movements => [200, 450, -400, 3000, -650, -130, 70, 1300],
     containerMovements.innerHTML = '';
-    movements.forEach(move => {
+
+    let sortedMovements = (sort) ? [...movements].sort((a, b) => a - b) : movements;
+    sortedMovements.forEach(move => {
         let type = move > 0 ? 'deposit' : 'withdrawal';
         const html = `
           <div class="movements__row">
@@ -82,6 +84,8 @@ function displayBalance(movements) {
     let balance = movements.reduce((acc, element) => acc + element, 0);
     labelBalance.textContent = `${balance}$`;
 }
+
+
 function displaySummary(account) {
     // movements => [200, 450, -400, 3000, -650, -130, 70, 1300],
     const income = account.movements
@@ -107,36 +111,101 @@ accaunts.forEach(acc => {
     acc.userName = userName;
 });
 
-let currentUser;
+function updateUI(user) {
+    displayMovements(user.movements);
+    displayBalance(user.movements);
+    displaySummary(user);
+}
 
-// document.addEventListener('keydown', (e) => {
-//     if (e.key === 'Enter') btnLogin()
-// });
+
+ok.addEventListener('click', function () {
+    modal.style.display = 'none';
+    inputLoginUsername.value = inputLoginPin.value = '';
+});
+
+let currentUser;
 
 btnLogin.addEventListener('click', function (e) {
     e.preventDefault();
-    let user = accaunts.find(acc => inputLoginUsername.value == acc.userName);
+    let user = accaunts.find(acc => inputLoginUsername.value.toLowerCase() == acc.userName);
 
     if (!user || inputLoginPin.value != user.pin) {
-        modal.style.display = block;
+        modal.style.display = 'block';
         return;
     };
+
 
     currentUser = user;
     inputLoginUsername.value = inputLoginPin.value = '';
     labelWelcome.textContent = `Hi, ${currentUser.owner.split(' ')[0]}!`
     containerApp.style.opacity = 1;
 
-    displayMovements(currentUser.movements);
-    displayBalance(currentUser.movements);
-    displaySummary(currentUser);
+    updateUI(currentUser);
 });
 
-ok.addEventListener('click', function () {
-    modal.style.display = none;
-    inputLoginUsername.value = inputLoginPin.value = '';
-})
+btnTransfer.addEventListener('click', function (e) {
+    e.preventDefault();
 
+    let amount = +inputTransferAmount.value;
+    let transferTo = accaunts.find(acc => acc.userName == inputTransferTo.value);
+
+    if (!transferTo) {
+        alert('User no found');
+    } else if (transferTo.userName == currentUser.userName) {
+        alert("You cann't transfer yourself");
+    } else if (amout > parseInt(labelBalance.textContent)) {
+        alert('You have not the amount to transfer');
+    } else {
+        currentUser.movements.push(-amount);
+        transferTo.movements.push(amount);
+
+        inputTransferTo.value = inputTransferAmount.value = '';
+
+        updateUI(currentUser);
+    }
+});
+
+btnLoan.addEventListener('click', function (e) {
+    e.preventDefault();
+
+    let loan = +inputLoanAmount.value;
+    let isEnough = currentUser.movements.some(el => el >= loan *0.1);
+
+    if (!isEnough && loan <= 0) {
+        alert('sorry');
+        return;
+    }
+
+    currentUser.movements.push(loan);
+    inputLoanAmount.value = '';
+    updateUI(currentUser);
+});
+
+btnClose.addEventListener('click', function (e) {
+    e.preventDefault();
+
+    let userName = inputCloseUsername.value;
+    let pin = +inputClosePin.value;
+    let userIndex = account.findIndex(el => el.userName == userName);
+
+    if (userIndex == -1 || userName != currentUser.userName || currentUser.pin != pin) {
+        alert('Credentials are not correct');
+        return;
+    }
+
+    accaunts.splice(userIndex, 1);
+    containerApp.style.opacity = 0;
+});
+
+let sort = false;
+btnSort.addEventListener('click', function (e) {
+    e.preventDefault();
+
+    sort = !sort;
+
+    displayMovements(currentUser.movements, sort);
+    console.log(sort);
+});
 
 
 const currencies = new Map([
