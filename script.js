@@ -51,6 +51,8 @@ const inputTransferAmount = document.querySelector('.form__input--amount');
 const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
+const modal = document.querySelector('.modal');
+const ok = document.querySelector('.ok');
 
 
 
@@ -72,6 +74,7 @@ function displayMovements(movements) {
         containerMovements.insertAdjacentHTML('afterbegin', html);
     });
 }
+
 
 
 function displayBalance(movements) {
@@ -96,12 +99,45 @@ function displaySummary(account) {
         .filter(cash => cash > 1)
         .reduce((acc, val) => acc + val);
 
-        labelSumCashBack.textContent=`${cashback}$`
+    labelSumCashBack.textContent = `${cashback}$`
 }
 
-displayMovements(accaunt1.movements);
-displayBalance(accaunt1.movements);
-displaySummary(accaunt1);
+accaunts.forEach(acc => {
+    let userName = acc.owner.toLowerCase().split(' ').map(el => el[0]).join('');
+    acc.userName = userName;
+});
+
+let currentUser;
+
+// document.addEventListener('keydown', (e) => {
+//     if (e.key === 'Enter') btnLogin()
+// });
+
+btnLogin.addEventListener('click', function (e) {
+    e.preventDefault();
+    let user = accaunts.find(acc => inputLoginUsername.value == acc.userName);
+
+    if (!user || inputLoginPin.value != user.pin) {
+        modal.style.display = block;
+        return;
+    };
+
+    currentUser = user;
+    inputLoginUsername.value = inputLoginPin.value = '';
+    labelWelcome.textContent = `Hi, ${currentUser.owner.split(' ')[0]}!`
+    containerApp.style.opacity = 1;
+
+    displayMovements(currentUser.movements);
+    displayBalance(currentUser.movements);
+    displaySummary(currentUser);
+});
+
+ok.addEventListener('click', function () {
+    modal.style.display = none;
+    inputLoginUsername.value = inputLoginPin.value = '';
+})
+
+
 
 const currencies = new Map([
     ['USD', 'United States dollar'],
