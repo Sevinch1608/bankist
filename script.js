@@ -98,7 +98,7 @@ function displayMovements(acc, sort) {
     let sortedMovements = sort ? [...acc.movements].sort((a, b) => a - b) : acc.movements;
     sortedMovements.forEach((move,ind) => {
         let type = move > 0 ? 'deposit' : 'withdrawal';
-        let time =new Date(acc.movements[ind]);
+        let time =new Date(acc.movementsDataes[ind]);
         const html = `
           <div class="movements__row">
             <div class="movements__type movements__type--${type}">
@@ -219,6 +219,8 @@ btnLogin.addEventListener('click', function (e) {
     userLogOut();
 });
 
+
+
 btnTransfer.addEventListener('click', function (e) {
     e.preventDefault();
 
@@ -229,7 +231,7 @@ btnTransfer.addEventListener('click', function (e) {
         alert('User no found');
     } else if (transferTo.userName == currentUser.userName) {
         alert("You cann't transfer yourself");
-    } else if (amout > parseInt(labelBalance.textContent)) {
+    } else if (amount > parseInt(labelBalance.textContent)) {
         alert('You have not the amount to transfer');
     } else {
         currentUser.movements.push(-amount);
@@ -285,7 +287,7 @@ btnSort.addEventListener('click', function (e) {
     e.preventDefault();
 
     sort = !sort;
-    displayMovements(currentUser.movements, sort);
+    displayMovements(currentUser, sort);
 });
 
 const currencies = new Map([
